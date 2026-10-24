@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>One Online CMS · Admin</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>body{font-family:Inter,system-ui,sans-serif}.field{width:100%;border:1px solid #dbe2ea;border-radius:12px;padding:11px 13px;outline:none}.field:focus{border-color:#0b6e8e;box-shadow:0 0 0 3px #0b6e8e1c}button:disabled{opacity:.5;cursor:not-allowed}</style>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900">
+<header class="bg-[#071a2b] text-white"><div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-4"><a href="/" class="font-extrabold tracking-tight">ONE<span class="text-cyan-300">ONLINE</span> <span class="ml-2 text-xs font-medium text-slate-300">CMS</span></a><div id="topUser" class="text-sm text-slate-300">Admin dashboard</div></div></header>
+<main class="mx-auto max-w-7xl px-4 py-8">
+<div id="notice" class="mb-4 hidden rounded-xl p-3 text-sm"></div>
+<section id="loginPanel" class="mx-auto max-w-md rounded-3xl border border-slate-200 bg-white p-7 shadow-sm">
+<p class="text-xs font-bold uppercase tracking-widest text-cyan-700">Secure access</p><h1 class="mt-2 text-2xl font-extrabold">Sign in to One Online</h1><p class="mt-2 text-sm leading-6 text-slate-500">Use the administrator account created by the setup script.</p>
+<form id="loginForm" class="mt-6 space-y-4"><label class="block text-sm font-semibold">Email<input class="field mt-2" name="email" type="email" required autocomplete="username"></label><label class="block text-sm font-semibold">Password<input class="field mt-2" name="password" type="password" required autocomplete="current-password"></label><button class="w-full rounded-xl bg-[#0b6e8e] px-4 py-3 font-bold text-white hover:bg-[#095b75]">Sign in</button></form>
+</section>
+<section id="dashboard" class="hidden">
+<div class="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><p class="text-xs font-bold uppercase tracking-widest text-cyan-700">Editorial workspace</p><h1 class="mt-1 text-3xl font-extrabold">News dashboard</h1><p class="mt-2 text-sm text-slate-500">Create, edit, draft and publish stories.</p></div><div class="flex gap-2"><button id="newArticle" class="rounded-xl bg-[#0b6e8e] px-4 py-3 font-bold text-white">＋ New article</button><button id="logoutBtn" class="rounded-xl border border-slate-200 bg-white px-4 py-3 font-bold">Sign out</button></div></div>
+<div class="grid gap-6 lg:grid-cols-[1.2fr_.8fr]">
+<div class="rounded-2xl border border-slate-200 bg-white p-5"><div class="mb-4 flex items-center justify-between"><h2 class="font-extrabold">Articles</h2><button id="refreshBtn" class="text-sm font-semibold text-cyan-700">Refresh</button></div><div id="articleList" class="space-y-3"></div></div>
+<div class="rounded-2xl border border-slate-200 bg-white p-5"><h2 id="editorHeading" class="text-lg font-extrabold">Create an article</h2>
+<form id="articleForm" class="mt-4 space-y-3">
+<input type="hidden" name="id">
+<label class="block text-sm font-semibold">Headline<input class="field mt-1" name="title" maxlength="220" required></label>
+<label class="block text-sm font-semibold">URL slug <span class="font-normal text-slate-400">(generated automatically)</span><input class="field mt-1 bg-slate-50" name="slug" readonly placeholder="generated-from-headline"></label>
+<label class="block text-sm font-semibold">Excerpt<textarea class="field mt-1" name="excerpt" rows="2" maxlength="500"></textarea></label>
+<label class="block text-sm font-semibold">Article body<textarea class="field mt-1" name="body" rows="8" required placeholder="Write the story here. Plain text is safe; line breaks are preserved."></textarea></label>
+<label class="block text-sm font-semibold">Category<select class="field mt-1" name="category_id" id="categorySelect"><option value="">Uncategorized</option></select></label>
+<label class="block text-sm font-semibold">Cover image<input class="field mt-1" name="cover_image" placeholder="https://... or upload below"></label>
+<div class="rounded-xl bg-slate-50 p-3"><label class="block text-sm font-semibold">Upload cover image <span class="font-normal text-slate-500">(max 5 MB)</span><input id="imageFile" class="mt-2 block w-full text-sm" type="file" accept="image/jpeg,image/png,image/webp,image/gif"></label><button id="uploadBtn" type="button" class="mt-3 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-bold">Upload image</button><p id="uploadStatus" class="mt-2 text-xs text-slate-500">Requires Cloudinary credentials in server environment.</p></div>
+<div class="grid gap-3 sm:grid-cols-2"><label class="block text-sm font-semibold">SEO title<input class="field mt-1" name="seo_title" maxlength="220"></label><label class="block text-sm font-semibold">SEO description<input class="field mt-1" name="seo_description" maxlength="300"></label></div>
+<label class="block text-sm font-semibold">Publication status<select class="field mt-1" name="status"><option value="draft">Save as draft</option><option value="published">Publish now</option></select></label>
+<div class="flex flex-wrap gap-2 pt-2"><button id="saveBtn" class="rounded-xl bg-[#071a2b] px-4 py-3 font-bold text-white">Save article</button><button id="clearBtn" type="button" class="rounded-xl border border-slate-200 px-4 py-3 font-bold">Clear form</button></div>
+</form></div></div></section>
+</main>
+<script>
+const $=s=>document.querySelector(s);let categories=[];
+function notice(msg,kind='info'){const n=$('#notice');n.textContent=msg;n.className='mb-4 rounded-xl p-3 text-sm '+(kind==='error'?'bg-rose-50 text-rose-700':kind==='success'?'bg-emerald-50 text-emerald-700':'bg-sky-50 text-sky-800');n.classList.remove('hidden')}
+async function api(url,opts={}){const r=await fetch(url,{credentials:'same-origin',...opts,headers:{...(opts.body instanceof FormData?{}:{'Content-Type':'application/json'}),...(opts.headers||{})}});const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.error||'Request failed');return data}
+function showDashboard(admin){$('#loginPanel').classList.add('hidden');$('#dashboard').classList.remove('hidden');$('#topUser').textContent=admin.email;loadData()}
+function showLogin(){$('#dashboard').classList.add('hidden');$('#loginPanel').classList.remove('hidden')}
+async function init(){try{const me=await api('/api/auth/me');if(me.admin)showDashboard(me.admin);else showLogin()}catch{showLogin()}}
+$('#loginForm').addEventListener('submit',async e=>{e.preventDefault();try{const fd=new FormData(e.target);const data=await api('/api/auth/login',{method:'POST',body:JSON.stringify({email:fd.get('email'),password:fd.get('password')})});notice('Signed in successfully.','success');showDashboard(data.admin)}catch(err){notice(err.message,'error')}});
+$('#logoutBtn').onclick=async()=>{try{await api('/api/auth/logout',{method:'POST',body:'{}'});showLogin();notice('Signed out.','success')}catch(e){notice(e.message,'error')}};
+async function loadData(){try{const [a,c]=await Promise.all([api('/api/admin/articles'),api('/api/categories')]);categories=c.categories;$('#categorySelect').innerHTML='<option value="">Uncategorized</option>'+categories.map(c=>`<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');renderArticles(a.articles)}catch(e){notice(e.message,'error')}}
+function escapeHtml(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function renderArticles(items){$('#articleList').innerHTML=items.length?items.map(a=>`<div class="rounded-xl border border-slate-200 p-3"><div class="flex items-start justify-between gap-3"><div class="min-w-0"><div class="font-bold leading-6">${escapeHtml(a.title)}</div><div class="mt-1 text-xs text-slate-500">${escapeHtml(a.category_name||'Uncategorized')} · <span class="${a.status==='published'?'text-emerald-700':'text-amber-700'}">${a.status}</span></div><div class="mt-1 truncate text-xs text-slate-400">/${escapeHtml(a.slug)}</div></div><div class="flex shrink-0 gap-2"><button class="editBtn rounded-lg bg-slate-100 px-3 py-2 text-xs font-bold" data-id="${a.id}">Edit</button><button class="deleteBtn rounded-lg bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700" data-id="${a.id}">Delete</button></div></div></div>`).join(''):'<p class="rounded-xl bg-slate-50 p-4 text-sm text-slate-500">No articles yet. Create your first story.</p>';
+$('#articleList').querySelectorAll('.editBtn').forEach(b=>b.onclick=()=>editArticle(items.find(a=>String(a.id)===b.dataset.id)));
+$('#articleList').querySelectorAll('.deleteBtn').forEach(b=>b.onclick=async()=>{if(!confirm('Permanently delete this article?'))return;try{await api('/api/admin/articles/'+b.dataset.id,{method:'DELETE'});notice('Article deleted.','success');loadData()}catch(e){notice(e.message,'error')}})}
+function editArticle(a){const f=$('#articleForm');for(const k of ['id','title','slug','excerpt','body','cover_image','category_id','status','seo_title','seo_description'])f.elements[k].value=a[k]??'';$('#editorHeading').textContent='Edit article';$('#saveBtn').textContent='Update article';window.scrollTo({top:0,behavior:'smooth'})}
+$('#articleForm').addEventListener('submit',async e=>{e.preventDefault();const f=e.target,fd=new FormData(f),id=fd.get('id');const payload={};for(const k of ['title','excerpt','body','cover_image','category_id','status','seo_title','seo_description'])payload[k]=fd.get(k);payload.category_id=payload.category_id||null;try{await api(id?'/api/admin/articles/'+id:'/api/admin/articles',{method:id?'PUT':'POST',body:JSON.stringify(payload)});notice(payload.status==='published'?'Article saved and published.':'Draft saved.','success');clearForm();loadData()}catch(err){notice(err.message,'error')}});
+function clearForm(){const f=$('#articleForm');f.reset();f.elements.id.value='';f.elements.slug.value='';$('#editorHeading').textContent='Create an article';$('#saveBtn').textContent='Save article';$('#uploadStatus').textContent='Requires Cloudinary credentials in server environment.'}
+$('#newArticle').onclick=clearForm;$('#clearBtn').onclick=clearForm;$('#refreshBtn').onclick=loadData;
+$('#articleForm').elements.title.addEventListener('input',e=>$('#articleForm').elements.slug.value=e.target.value.toLowerCase().trim().normalize('NFKD').replace(/[^\w\s-]/g,'').replace(/[\s_-]+/g,'-').replace(/^-+|-+$/g,''));
+$('#uploadBtn').onclick=async()=>{const file=$('#imageFile').files[0];if(!file){$('#uploadStatus').textContent='Choose an image first.';return}const fd=new FormData();fd.append('image',file);$('#uploadStatus').textContent='Uploading…';try{const data=await api('/api/admin/upload',{method:'POST',body:fd});$('#articleForm').elements.cover_image.value=data.url;$('#uploadStatus').textContent='Upload complete. Image URL added.';notice('Image uploaded. Save the article to use it.','success')}catch(e){$('#uploadStatus').textContent=e.message;notice(e.message,'error')}};
+init();
+</script>
+</body></html>

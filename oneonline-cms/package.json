@@ -1,0 +1,27 @@
+{
+  "name": "oneonline-cms",
+  "version": "1.0.0",
+  "private": true,
+  "description": "One Online news CMS for Render with Express, PostgreSQL, admin dashboard and Cloudinary uploads",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "db:init": "node scripts/init-db.js",
+    "admin:create": "node scripts/create-admin.js"
+  },
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cloudinary": "^2.5.1",
+    "connect-pg-simple": "^10.0.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "express-session": "^1.18.1",
+    "helmet": "^8.0.0",
+    "multer": "^1.4.5-lts.1",
+    "pg": "^8.13.1",
+    "slugify": "^1.6.6"
+  }
+}
